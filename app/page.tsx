@@ -7,7 +7,7 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    // Redirect to dashboard
+    // Redirect to lgoin
     router.push("/login");
   }, [router]);
 
@@ -15,7 +15,7 @@ export default function Home() {
     <div className="flex min-h-screen items-center justify-center">
       <div className="text-center">
         <div className="w-8 h-8 border-4 border-green border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-muted-foreground">Redirecting to dashboard...</p>
+        <p className="text-muted-foreground">Redirecting to login...</p>
       </div>
     </div>
   );

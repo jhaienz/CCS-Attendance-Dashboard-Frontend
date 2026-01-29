@@ -1,8 +1,9 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: process.env.API_BASE_URL || "http://localhost:3000/",
-  timeout: 1000,
+  // pang server side lang baga ang API_BASE_URL
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000",
+  timeout: 20000, // 20 seconds nalang
   headers: {
     "Content-Type": "application/json",
   },
