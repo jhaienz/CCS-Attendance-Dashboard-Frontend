@@ -53,7 +53,7 @@ export default function Login() {
 
     try {
       const data = await AuthService.officerLogin(formData);
-      localStorage.setItem("token", data.token);
+      sessionStorage.setItem("token", data.token);
       router.push("/dashboard");
     } catch (error: any) {
       const status = error.response?.status;
@@ -78,8 +78,6 @@ export default function Login() {
       } else {
         setError("Error, Please try again.");
       }
-
-
     } finally {
       setLoading(false);
     }

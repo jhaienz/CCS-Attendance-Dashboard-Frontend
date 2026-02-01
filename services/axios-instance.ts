@@ -11,7 +11,7 @@ const api = axios.create({
 // dapat every request kang naka login gagamiton ni
 api.interceptors.request.use((config) => {
   const token =
-    typeof window != "undefined" ? localStorage.getItem("token") : null;
+    typeof window != "undefined" ? sessionStorage.getItem("token") : null;
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
