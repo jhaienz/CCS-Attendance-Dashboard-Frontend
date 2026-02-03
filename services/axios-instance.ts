@@ -1,17 +1,17 @@
 import axios from "axios";
+import { AuthService } from "./auth-service";
 
 const api = axios.create({
-  // pang server side lang baga ang API_BASE_URL
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000",
-  timeout: 20000, // 20 seconds nalang
+  timeout: 20000, // 20 seconds
   headers: {
     "Content-Type": "application/json",
   },
 });
-// dapat every request kang naka login gagamiton ni
+
+// Request interceptor to add authentication token
 api.interceptors.request.use((config) => {
-  const token =
-    typeof window != "undefined" ? sessionStorage.getItem("token") : null;
+  const token = typeof window !== "undefined" ? sessionStorage.getItem("token") : null;
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -19,14 +19,41 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// TODO: i cocode ko pa ni implementation kapag expired na ang token dapat mag logout
+// Response interceptor to handle token refresh and 401 errors
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status == 401) {
-      // handle logout logic in here to be implemented soon
-      console.log("logging out because of expired token");
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        // Attempt to refresh token
+        const response = await AuthService.refreshToken();
+        const newToken = response.token;
+
+        // Update token in session storage
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem("token", newToken);
+        }
+
+        // Update request with new token
+        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+
+        // Retry original request
+        return api(originalRequest);
+      } catch (refreshError) {
+        console.error("Token refresh failed:", refreshError);
+
+        // If refresh fails, logout user
+        if (typeof window !== "undefined") {
+          sessionStorage.removeItem("token");
+          window.location.href = "/login";
+        }
+      }
     }
+
     return Promise.reject(error);
   },
 );

@@ -10,6 +10,9 @@ interface EventsSidebarProps {
 }
 
 export function EventsSidebar({ events, selectedEventId, onEventSelect }: EventsSidebarProps) {
+  // Safeguard to ensure events is always an array
+  const safeEvents = Array.isArray(events) ? events : [];
+
   return (
     <div className="w-60 h-screen bg-sidebar border-r border-sidebar-border flex flex-col">
       {/* Events List */}
@@ -18,7 +21,7 @@ export function EventsSidebar({ events, selectedEventId, onEventSelect }: Events
           <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-3">
             Events
           </h2>
-          {events.map((event) => (
+          {safeEvents.map((event) => (
             <button
               key={event.id}
               onClick={() => onEventSelect(event.id)}

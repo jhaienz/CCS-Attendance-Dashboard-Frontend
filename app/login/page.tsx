@@ -53,7 +53,13 @@ export default function Login() {
 
     try {
       const data = await AuthService.officerLogin(formData);
+
+      // Store token in session storage and cookies for middleware access
       sessionStorage.setItem("token", data.token);
+
+      // Set cookie with token for middleware
+      document.cookie = `token=${data.token}; path=/; max-age=${24 * 60 * 60}; SameSite=Strict; Secure`;
+
       router.push("/dashboard");
     } catch (error: any) {
       const status = error.response?.status;
