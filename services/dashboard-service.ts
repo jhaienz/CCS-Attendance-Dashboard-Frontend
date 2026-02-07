@@ -1,4 +1,4 @@
-import { Attendee, Event, EventDetails, YearLevel } from "@/types/dashboard";
+import { Attendee, Event, EventDetails } from "@/types/dashboard";
 import api from "./axios-instance";
 
 export const DashboardService = {
@@ -28,4 +28,12 @@ export const DashboardService = {
     const response = await api.get(`/event/${eventId}`);
     return response.data;
   },
+
+  // Fetch attendance records by event ID
+  getAttendanceByEvent: async (eventId: string): Promise<Attendee[]> => {
+    const response = await api.get(`/attendance/${eventId}`);
+    return response.data;
+  },
+
+
 };

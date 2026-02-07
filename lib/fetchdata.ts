@@ -1,5 +1,5 @@
 import { DashboardService } from "@/services/dashboard-service";
-import { Attendee, Event, EventDetails, YearLevel } from "@/types/dashboard";
+import { Attendee, Event, EventDetails } from "@/types/dashboard";
 import { useEffect, useState } from "react";
 
 // Hook to fetch events list
@@ -68,25 +68,25 @@ export const useEventDetails = (eventId: string | null) => {
   }, [eventId]);
 
   return { eventDetails, loading, error, refetch: fetchEventDetails };
-};
+}
 
-// Hook to fetch attendees
-export const useAttendees = (eventId: string | null) => {
-  const [attendees, setAttendees] = useState<Attendee[]>([]);
+// Hook to fetch attendance records for an event
+export const useAttendanceByEvent = (eventId: string | null) => {
+  const [attendance, setAttendance] = useState<Attendee[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchAttendees = async () => {
+  const fetchAttendance = async () => {
     if (!eventId) return;
 
     try {
       setLoading(true);
       setError(null);
-      const data = await DashboardService.getAttendees(eventId);
-      setAttendees(data);
+      const data = await DashboardService.getAttendanceByEvent(eventId);
+      setAttendance(data);
     } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to fetch attendees");
-      console.error("Error fetching attendees:", err);
+      setError(err.response?.data?.message || "Failed to fetch attendance records");
+      console.error("Error fetching attendance:", err);
     } finally {
       setLoading(false);
     }
@@ -94,80 +94,11 @@ export const useAttendees = (eventId: string | null) => {
 
   useEffect(() => {
     if (eventId) {
-      fetchAttendees();
+      fetchAttendance();
     } else {
-      setAttendees([]);
+      setAttendance([]);
     }
   }, [eventId]);
 
-  return { attendees, loading, error, refetch: fetchAttendees };
-};
-
-// Hook to fetch year-level attendance
-export const useYearLevelAttendance = (eventId: string | null) => {
-  const [yearLevels, setYearLevels] = useState<YearLevel[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchYearLevelAttendance = async () => {
-    if (!eventId) return;
-
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await DashboardService.getYearLevelAttendance(eventId);
-      setYearLevels(data);
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to fetch year-level attendance");
-      console.error("Error fetching year-level attendance:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (eventId) {
-      fetchYearLevelAttendance();
-    } else {
-      setYearLevels([]);
-    }
-  }, [eventId]);
-
-  return { yearLevels, loading, error, refetch: fetchYearLevelAttendance };
-};
-
-// Hook to fetch total attendance
-export const useTotalAttendance = (eventId: string | null) => {
-  const [totalAttendance, setTotalAttendance] = useState<{
-    totalPresent: number;
-    totalEnrolled: number;
-  } | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchTotalAttendance = async () => {
-    if (!eventId) return;
-
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await DashboardService.getTotalAttendance(eventId);
-      setTotalAttendance(data);
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to fetch total attendance");
-      console.error("Error fetching total attendance:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (eventId) {
-      fetchTotalAttendance();
-    } else {
-      setTotalAttendance(null);
-    }
-  }, [eventId]);
-
-  return { totalAttendance, loading, error, refetch: fetchTotalAttendance };
-};
+  return { attendance, loading, error, refetch: fetchAttendance };
+}

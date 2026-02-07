@@ -35,7 +35,7 @@ export function Header() {
       {/* User Info & Actions */}
       <div className="flex items-center gap-4">
         <div className="text-right">
-          <div className="text-sm font-medium">User Name</div>
+          <div className="text-sm font-medium">User</div>
           <div className="text-xs text-muted-foreground">Administrator</div>
         </div>
 

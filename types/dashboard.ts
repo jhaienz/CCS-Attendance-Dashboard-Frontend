@@ -16,9 +16,14 @@ export interface YearLevel {
 
 export interface Attendee {
   id: string;
-  name: string;
-  yearLevel: '1st' | '2nd' | '3rd' | '4th';
+  firstName: string;
+  lastName: string;
   studentId: string;
+  CSY: string;
+  AM: boolean;
+  PM: boolean;
+  AMOut: boolean;
+  PMOut: boolean;
 }
 
 export interface EventDetails {

@@ -5,7 +5,8 @@ import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { EventHeader } from '@/components/dashboard/EventHeader';
 import { TotalAttendanceCard } from '@/components/dashboard/TotalAttendanceCard';
 import { YearLevelCard } from '@/components/dashboard/YearLevelCard';
-import { useEventDetails, useEvents } from '@/lib/fetchdata';
+import { useAttendanceByEvent, useEventDetails, useEvents } from '@/lib/fetchdata';
+import { Attendee } from '@/types/dashboard';
 import { useState } from 'react';
 
 export default function DashboardPage() {
@@ -13,10 +14,12 @@ export default function DashboardPage() {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [selectedYearLevel, setSelectedYearLevel] = useState<string | null>(null);
 
-  // Fetch events and event details
+  // Fetch events and attendance data
   const { events, loading: eventsLoading, error: eventsError } = useEvents();
   const { eventDetails, loading: eventDetailsLoading, error: eventDetailsError } =
     useEventDetails(selectedEventId);
+  const { attendance, loading: attendanceLoading, error: attendanceError } =
+    useAttendanceByEvent(selectedEventId);
 
   // Handle year level click
   const handleYearLevelClick = (year: string) => {
@@ -29,10 +32,21 @@ export default function DashboardPage() {
     setSelectedYearLevel(null);
   };
 
+  // Helper to get year level from CSY (e.g., "BSCS-2" becomes "2nd")
+  const getYearLevel = (csy: string): string => {
+    const yearMatch = csy.match(/\d/);
+    if (yearMatch) {
+      const year = parseInt(yearMatch[0]);
+      const yearSuffix = year === 1 ? '1st' : year === 2 ? '2nd' : year === 3 ? '3rd' : '4th';
+      return yearSuffix;
+    }
+    return 'Unknown';
+  };
+
   // Filter attendees by selected year level
-  const filteredAttendees = selectedYearLevel && eventDetails?.attendees
-    ? eventDetails.attendees.filter(attendee => attendee.yearLevel === selectedYearLevel)
-    : eventDetails?.attendees || [];
+  const filteredAttendees = selectedYearLevel && attendance
+    ? attendance.filter((attendee: Attendee) => getYearLevel(attendee.CSY) === selectedYearLevel)
+    : attendance || [];
 
   // Show loading state
   if (eventsLoading) {
@@ -136,8 +150,39 @@ export default function DashboardPage() {
     );
   }
 
+  // Calculate year level statistics from attendance data
+  const calculateYearLevelStats = () => {
+    const yearLevels: { [key: string]: { present: number; total: number } } = {
+      '1st': { present: 0, total: 0 },
+      '2nd': { present: 0, total: 0 },
+      '3rd': { present: 0, total: 0 },
+      '4th': { present: 0, total: 0 },
+    };
+
+    // Calculate present and total for each year level
+    attendance.forEach(attendee => {
+      const yearLevel = getYearLevel(attendee.CSY);
+      if (yearLevels[yearLevel]) {
+        yearLevels[yearLevel].total++;
+        if (attendee.AM || attendee.PM) {
+          yearLevels[yearLevel].present++;
+        }
+      }
+    });
+
+    return Object.keys(yearLevels).map(year => ({
+      year: year as '1st' | '2nd' | '3rd' | '4th',
+      present: yearLevels[year].present,
+      total: yearLevels[year].total,
+    }));
+  };
+
   // Show event details if available
   if (eventDetails) {
+    const yearLevelStats = calculateYearLevelStats();
+    const totalPresent = yearLevelStats.reduce((sum, year) => sum + year.present, 0);
+    const totalEnrolled = yearLevelStats.reduce((sum, year) => sum + year.total, 0);
+
     return (
       <DashboardLayout
         events={events}
@@ -152,7 +197,7 @@ export default function DashboardPage() {
           <div className="grid grid-cols-12 gap-6">
             {/* Year Level Cards and Total Attendance */}
             <div className="col-span-5 grid grid-cols-2 gap-4">
-              {eventDetails.yearLevels.map((yearLevel) => (
+              {yearLevelStats.map((yearLevel) => (
                 <YearLevelCard
                   key={yearLevel.year}
                   yearLevel={yearLevel}
@@ -164,8 +209,8 @@ export default function DashboardPage() {
               {/* Total Attendance Card */}
               <div className="col-span-2">
                 <TotalAttendanceCard
-                  totalPresent={eventDetails.totalPresent}
-                  totalEnrolled={eventDetails.totalEnrolled}
+                  totalPresent={totalPresent}
+                  totalEnrolled={totalEnrolled}
                 />
               </div>
             </div>

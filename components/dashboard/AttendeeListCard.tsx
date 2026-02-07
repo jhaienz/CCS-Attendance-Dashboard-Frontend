@@ -10,6 +10,17 @@ interface AttendeeListCardProps {
 }
 
 export function AttendeeListCard({ attendees, selectedYearLevel }: AttendeeListCardProps) {
+  // pag kua kang year level from CSY like  "BSCS-2" convert to "2nd"
+  const getYearLevel = (csy: string): string => {
+    const yearMatch = csy.match(/\d/);
+    if (yearMatch) {
+      const year = parseInt(yearMatch[0]);
+      const yearSuffix = year === 1 ? '1st' : year === 2 ? '2nd' : year === 3 ? '3rd' : '4th';
+      return yearSuffix;
+    }
+    return 'Unknown';
+  };
+
   return (
     <Card className="h-full">
       <CardHeader>
@@ -31,15 +42,23 @@ export function AttendeeListCard({ attendees, selectedYearLevel }: AttendeeListC
           <div className="space-y-3">
             {attendees.map((attendee) => (
               <div
-                key={attendee.id}
+                key={attendee.studentId}
                 className="flex items-center gap-3 p-3 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors"
               >
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate">{attendee.name}</div>
+                  <div className="font-medium truncate">
+                    {attendee.lastName}, {attendee.firstName}
+                  </div>
                   <div className="text-xs text-muted-foreground">{attendee.studentId}</div>
                 </div>
                 <div className="text-xs font-medium text-muted-foreground">
-                  {attendee.yearLevel} Year
+                  {getYearLevel(attendee.CSY)} Year
+                </div>
+                <div className="flex gap-1">
+                  {attendee.AM && <Badge className="bg-green text-white">AM</Badge>}
+                  {attendee.PM && <Badge className="bg-blue text-white">PM</Badge>}
+                  {attendee.AMOut && <Badge className="bg-yellow text-black">AM Out</Badge>}
+                  {attendee.PMOut && <Badge className="bg-orange text-white">PM Out</Badge>}
                 </div>
               </div>
             ))}
