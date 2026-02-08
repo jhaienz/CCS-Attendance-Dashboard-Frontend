@@ -87,6 +87,7 @@ export const useAttendanceByEvent = (eventId: string | null) => {
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to fetch attendance records");
       console.error("Error fetching attendance:", err);
+      setAttendance([]); // Set empty array on error
     } finally {
       setLoading(false);
     }

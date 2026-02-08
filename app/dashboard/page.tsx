@@ -1,25 +1,29 @@
 'use client';
 
-import { AttendeeListCard } from '@/components/dashboard/AttendeeListCard';
+import { AttendanceTable } from '@/components/dashboard/AttendanceTable';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { EventHeader } from '@/components/dashboard/EventHeader';
+import { FilterModal } from '@/components/dashboard/FilterModal';
 import { TotalAttendanceCard } from '@/components/dashboard/TotalAttendanceCard';
 import { YearLevelCard } from '@/components/dashboard/YearLevelCard';
 import { useAttendanceByEvent, useEventDetails, useEvents } from '@/lib/fetchdata';
-import { Attendee } from '@/types/dashboard';
 import { useState } from 'react';
 
 export default function DashboardPage() {
   // State management
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [selectedYearLevel, setSelectedYearLevel] = useState<string | null>(null);
+  const [selectedSection, setSelectedSection] = useState<string>('');
+  const [selectedYear, setSelectedYear] = useState<string>('');
+  const [selectedCourse, setSelectedCourse] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState<boolean>(false);
 
   // Fetch events and attendance data
   const { events, loading: eventsLoading, error: eventsError } = useEvents();
   const { eventDetails, loading: eventDetailsLoading, error: eventDetailsError } =
     useEventDetails(selectedEventId);
-  const { attendance, loading: attendanceLoading, error: attendanceError } =
-    useAttendanceByEvent(selectedEventId);
+  const { attendance } = useAttendanceByEvent(selectedEventId);
 
   // Handle year level click
   const handleYearLevelClick = (year: string) => {
@@ -30,10 +34,17 @@ export default function DashboardPage() {
   const handleEventSelect = (eventId: string) => {
     setSelectedEventId(eventId);
     setSelectedYearLevel(null);
+    setSelectedSection('');
+    setSelectedYear('');
+    setSelectedCourse('');
+    setSearchTerm('');
   };
 
   // Helper to get year level from CSY (e.g., "BSCS-2" becomes "2nd")
-  const getYearLevel = (csy: string): string => {
+  const getYearLevel = (csy: string | undefined | null): string => {
+    if (!csy || typeof csy !== 'string') {
+      return 'Unknown';
+    }
     const yearMatch = csy.match(/\d/);
     if (yearMatch) {
       const year = parseInt(yearMatch[0]);
@@ -43,10 +54,56 @@ export default function DashboardPage() {
     return 'Unknown';
   };
 
-  // Filter attendees by selected year level
-  const filteredAttendees = selectedYearLevel && attendance
-    ? attendance.filter((attendee: Attendee) => getYearLevel(attendee.CSY) === selectedYearLevel)
-    : attendance || [];
+  // Helper to get course from CSY (e.g., "BSIT-2B" becomes "IT")
+  const getCourse = (csy: string | undefined | null): string => {
+    if (!csy || typeof csy !== 'string') {
+      return 'Unknown';
+    }
+    const courseMatch = csy.match(/^BS([A-Z]{2})/);
+    if (courseMatch) {
+      return courseMatch[1]; // Returns "IT", "CS", "IS", or "ACT"
+    }
+    return 'Unknown';
+  };
+
+  // Get unique values for filters
+  const sections = attendance ? Array.from(new Set(attendance.map(attendee => attendee.CSY || ''))).filter(Boolean).sort() : [];
+  const years = attendance ? Array.from(new Set(attendance.map(attendee => getYearLevel(attendee.CSY)))).sort() : [];
+  const courses = attendance ? Array.from(new Set(attendance.map(attendee => getCourse(attendee.CSY)))).sort() : [];
+
+  // Filter attendees - first remove invalid records, then apply other filters
+  const filteredAttendees = attendance ? attendance.filter(attendee => {
+    // First filter out invalid attendees
+    const hasValidLastName = attendee.lastName && attendee.lastName.trim() && attendee.lastName !== 'Unknown';
+    const hasValidFirstName = attendee.firstName && attendee.firstName.trim() && attendee.firstName !== 'Unknown';
+    const hasValidStudentId = attendee.studentId && attendee.studentId.trim() && attendee.studentId !== 'Unknown';
+    const hasValidCSY = attendee.CSY && attendee.CSY.trim() && attendee.CSY !== 'Unknown';
+
+    if (!(hasValidLastName || hasValidFirstName || hasValidStudentId || hasValidCSY)) {
+      return false;
+    }
+
+    // Then apply other filters
+    const year = getYearLevel(attendee.CSY);
+    const course = getCourse(attendee.CSY);
+    const searchLower = searchTerm.toLowerCase();
+
+    // Safe property access with fallback to empty string
+    const lastName = (attendee.lastName || '').toLowerCase();
+    const firstName = (attendee.firstName || '').toLowerCase();
+    const studentId = (attendee.studentId || '').toLowerCase();
+
+    return (
+      (!selectedSection || attendee.CSY === selectedSection) &&
+      (!selectedYear || year === selectedYear) &&
+      (!selectedCourse || course === selectedCourse) &&
+      (lastName.includes(searchLower) ||
+        firstName.includes(searchLower) ||
+        studentId.includes(searchLower))
+    );
+  }) : [];
+
+
 
   // Show loading state
   if (eventsLoading) {
@@ -161,6 +218,16 @@ export default function DashboardPage() {
 
     // Calculate present and total for each year level
     attendance.forEach(attendee => {
+      // Skip invalid attendees
+      const hasValidLastName = attendee.lastName && attendee.lastName.trim() && attendee.lastName !== 'Unknown';
+      const hasValidFirstName = attendee.firstName && attendee.firstName.trim() && attendee.firstName !== 'Unknown';
+      const hasValidStudentId = attendee.studentId && attendee.studentId.trim() && attendee.studentId !== 'Unknown';
+      const hasValidCSY = attendee.CSY && attendee.CSY.trim() && attendee.CSY !== 'Unknown';
+
+      if (!(hasValidLastName || hasValidFirstName || hasValidStudentId || hasValidCSY)) {
+        return;
+      }
+
       const yearLevel = getYearLevel(attendee.CSY);
       if (yearLevels[yearLevel]) {
         yearLevels[yearLevel].total++;
@@ -191,12 +258,30 @@ export default function DashboardPage() {
       >
         <div className="p-6 space-y-6">
           {/* Event Header */}
-          <EventHeader title={eventDetails.title} date={eventDetails.date} />
+          <EventHeader
+            title={eventDetails.title}
+            date={eventDetails.date}
+          />
+
+          {/* Filter Modal */}
+          <FilterModal
+            isOpen={isFilterModalOpen}
+            onClose={() => setIsFilterModalOpen(false)}
+            sections={sections}
+            selectedSection={selectedSection}
+            onSectionChange={setSelectedSection}
+            years={years}
+            selectedYear={selectedYear}
+            onYearChange={setSelectedYear}
+            courses={courses}
+            selectedCourse={selectedCourse}
+            onCourseChange={setSelectedCourse}
+          />
 
           {/* Main Grid Layout */}
           <div className="grid grid-cols-12 gap-6">
             {/* Year Level Cards and Total Attendance */}
-            <div className="col-span-5 grid grid-cols-2 gap-4">
+            <div className="col-span-7 grid grid-cols-2 gap-4">
               {yearLevelStats.map((yearLevel) => (
                 <YearLevelCard
                   key={yearLevel.year}
@@ -206,20 +291,32 @@ export default function DashboardPage() {
                 />
               ))}
 
-              {/* Total Attendance Card */}
-              <div className="col-span-2">
-                <TotalAttendanceCard
-                  totalPresent={totalPresent}
-                  totalEnrolled={totalEnrolled}
-                />
-              </div>
+            </div>
+            {/* Total Attendance Card */}
+            <div className="col-span-5">
+              <TotalAttendanceCard
+                totalPresent={totalPresent}
+                totalEnrolled={totalEnrolled}
+              />
             </div>
 
-            {/* Attendee List - Right Side */}
-            <div className="col-span-7">
-              <AttendeeListCard
+
+            {/* Statistics Cards */}
+            {/* <div className="col-span-12">
+              <StatisticsCards
+                totalBySection={totalBySection}
+                totalByYear={totalByYear}
+                totalByCourse={totalByCourse}
+              />
+            </div> */}
+
+            {/* Attendance Table move sa bottom */}
+            <div className="col-span-12">
+              <AttendanceTable
                 attendees={filteredAttendees}
-                selectedYearLevel={selectedYearLevel}
+                onFilterClick={() => setIsFilterModalOpen(true)}
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
               />
             </div>
           </div>

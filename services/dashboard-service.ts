@@ -32,7 +32,22 @@ export const DashboardService = {
   // Fetch attendance records by event ID
   getAttendanceByEvent: async (eventId: string): Promise<Attendee[]> => {
     const response = await api.get(`/attendance/${eventId}`);
-    return response.data;
+    console.log('API response for attendance:', response.data);
+    // Filter out invalid attendees with no meaningful data
+    const filtered = Array.isArray(response.data) ? response.data.filter(attendee => {
+      // Skip if attendee is null/undefined
+      if (!attendee) return false;
+
+      // Skip if all key fields are empty or null or 'Unknown'
+      const hasValidLastName = attendee.lastName && attendee.lastName.trim() && attendee.lastName !== 'Unknown';
+      const hasValidFirstName = attendee.firstName && attendee.firstName.trim() && attendee.firstName !== 'Unknown';
+      const hasValidStudentId = attendee.studentId && attendee.studentId.trim() && attendee.studentId !== 'Unknown';
+      const hasValidCSY = attendee.CSY && attendee.CSY.trim() && attendee.CSY !== 'Unknown';
+
+      return hasValidLastName || hasValidFirstName || hasValidStudentId || hasValidCSY;
+    }) : [];
+    console.log('Filtered attendees:', filtered);
+    return filtered;
   },
 
 

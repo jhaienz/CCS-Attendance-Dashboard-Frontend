@@ -16,10 +16,10 @@ export interface YearLevel {
 
 export interface Attendee {
   id: string;
-  firstName: string;
-  lastName: string;
-  studentId: string;
-  CSY: string;
+  firstName: string | undefined | null;
+  lastName: string | undefined | null;
+  studentId: string | undefined | null;
+  CSY: string | undefined | null;
   AM: boolean;
   PM: boolean;
   AMOut: boolean;

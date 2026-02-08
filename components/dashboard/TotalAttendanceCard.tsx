@@ -7,7 +7,8 @@ interface TotalAttendanceCardProps {
 }
 
 export function TotalAttendanceCard({ totalPresent, totalEnrolled }: TotalAttendanceCardProps) {
-  const percentage = Math.round((totalPresent / totalEnrolled) * 100);
+  // Calculate attendance percentage with safety checks for division by zero
+  const percentage = totalEnrolled === 0 ? 0 : Math.round((totalPresent / totalEnrolled) * 100);
   const radius = 70;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
