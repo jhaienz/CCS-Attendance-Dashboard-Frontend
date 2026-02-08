@@ -11,13 +11,13 @@ function Select({ className, options, ...props }: SelectProps) {
     <select
       data-slot="select"
       className={cn(
-        "border-input h-9 w-full rounded-md border bg-transparent px-3 py-1 text-base shadow-xs outline-none focus:border-ring focus:ring-ring/50 focus:ring-[3px] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+        "border-input h-9 w-full rounded-md border bg-background text-foreground px-3 py-1 text-base shadow-xs outline-none focus:border-ring focus:ring-ring/50 focus:ring-[3px] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
         className
       )}
       {...props}
     >
       {options.map((option) => (
-        <option key={option.value} value={option.value}>
+        <option key={option.value} value={option.value} className="bg-background text-foreground">
           {option.label}
         </option>
       ))}
