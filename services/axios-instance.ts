@@ -2,7 +2,7 @@ import axios from "axios";
 import { AuthService } from "./auth-service";
 
 const api = axios.create({
-  baseURL: process.env.API_BASE_URL,
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
   timeout: 20000, // 20 seconds
   headers: {
     "Content-Type": "application/json",
