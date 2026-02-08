@@ -54,14 +54,19 @@ export default function DashboardPage() {
     return 'Unknown';
   };
 
-  // Helper to get course from CSY (e.g., "BSIT-2B" becomes "IT")
+  // Helper to get course from CSY (e.g., "BSIT-2B" becomes "IT", "ACT-3A" becomes "ACT")
   const getCourse = (csy: string | undefined | null): string => {
     if (!csy || typeof csy !== 'string') {
       return 'Unknown';
     }
+    // Check for ACT course (not prefixed with BS)
+    if (csy.startsWith('ACT')) {
+      return 'ACT';
+    }
+    // Check for BS-prefixed courses (BSIT, BSCS, BSIS)
     const courseMatch = csy.match(/^BS([A-Z]{2})/);
     if (courseMatch) {
-      return courseMatch[1]; // Returns "IT", "CS", "IS", or "ACT"
+      return courseMatch[1]; // Returns "IT", "CS", or "IS"
     }
     return 'Unknown';
   };
