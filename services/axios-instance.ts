@@ -2,7 +2,7 @@ import axios from "axios";
 import { AuthService } from "./auth-service";
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000",
+  baseURL: process.env.API_BASE_URL,
   timeout: 20000, // 20 seconds
   headers: {
     "Content-Type": "application/json",
@@ -11,7 +11,8 @@ const api = axios.create({
 
 // Request interceptor to add authentication token
 api.interceptors.request.use((config) => {
-  const token = typeof window !== "undefined" ? sessionStorage.getItem("token") : null;
+  const token =
+    typeof window !== "undefined" ? sessionStorage.getItem("token") : null;
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
