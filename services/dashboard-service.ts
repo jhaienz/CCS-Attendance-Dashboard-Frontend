@@ -1,6 +1,33 @@
 import { Attendee, Event, EventDetails } from "@/types/dashboard";
 import api from "./axios-instance";
 
+type ApiEvent = {
+  _id?: string;
+  eventTitle?: string;
+  date?: string;
+};
+
+type ApiStudent = {
+  _id?: string;
+  firstName?: string;
+  lastName?: string;
+  studentId?: string;
+  CSY?: string;
+};
+
+type ApiAttendanceRecord = {
+  _id?: string;
+  student?: ApiStudent | null;
+  firstName?: string;
+  lastName?: string;
+  studentId?: string;
+  CSY?: string;
+  AM?: boolean;
+  PM?: boolean;
+  AMOut?: boolean;
+  PMOut?: boolean;
+};
+
 export const DashboardService = {
   // Fetch all events
   getEvents: async (): Promise<Event[]> => {
@@ -11,10 +38,10 @@ export const DashboardService = {
     // Extract events from response (API returns { success: true, events: [...] })
     if (response.data.success && Array.isArray(response.data.events)) {
       // Map API event properties to our TypeScript interface
-      return response.data.events.map((apiEvent: any) => ({
-        id: apiEvent._id,
-        title: apiEvent.eventTitle,
-        date: apiEvent.date,
+      return (response.data.events as ApiEvent[]).map((apiEvent) => ({
+        id: apiEvent._id ?? "",
+        title: apiEvent.eventTitle ?? "",
+        date: apiEvent.date ?? "",
         status: "upcoming", // Default status
       }));
     }
@@ -35,13 +62,13 @@ export const DashboardService = {
   getAttendanceByEvent: async (eventId: string): Promise<Attendee[]> => {
     const response = await api.get(`/attendance/${eventId}`);
     console.log("API response for attendance:", response.data);
-    const rawAttendance = Array.isArray(response.data)
-      ? response.data
+    const rawAttendance: ApiAttendanceRecord[] = Array.isArray(response.data)
+      ? (response.data as ApiAttendanceRecord[])
       : Array.isArray(response.data?.attendance)
-        ? response.data.attendance
+        ? (response.data.attendance as ApiAttendanceRecord[])
         : [];
 
-    const mapped = rawAttendance.map((record: any, index: number): Attendee => {
+    const mapped = rawAttendance.map((record, index): Attendee => {
       const student = record?.student ?? {};
       const studentId = student.studentId ?? record.studentId ?? null;
       const firstName = student.firstName ?? record.firstName ?? null;
@@ -62,7 +89,7 @@ export const DashboardService = {
     });
 
     // Filter out invalid attendees with no meaningful data
-    const filtered = mapped.filter((attendee) => {
+    const filtered = mapped.filter((attendee: Attendee) => {
       if (!attendee) return false;
 
       const hasValidLastName =

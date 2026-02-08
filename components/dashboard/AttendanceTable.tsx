@@ -93,7 +93,7 @@ export function AttendanceTable({
         </p>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[720px]">
+        <ScrollArea className="h-180">
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>

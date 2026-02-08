@@ -1,6 +1,21 @@
 import { DashboardService } from "@/services/dashboard-service";
 import { Attendee, Event, EventDetails } from "@/types/dashboard";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+
+type ApiErrorResponse = {
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+};
+
+const getErrorMessage = (err: unknown): string | undefined => {
+  if (typeof err === "object" && err !== null && "response" in err) {
+    return (err as ApiErrorResponse).response?.data?.message;
+  }
+  return undefined;
+};
 
 // Hook to fetch events list
 export const useEvents = () => {
@@ -8,31 +23,31 @@ export const useEvents = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       const data = await DashboardService.getEvents();
 
       // Debug log to verify data type
-      console.log('Fetched events data:', data);
-      console.log('Data type:', typeof data);
-      console.log('Is array:', Array.isArray(data));
+      console.log("Fetched events data:", data);
+      console.log("Data type:", typeof data);
+      console.log("Is array:", Array.isArray(data));
 
       // Ensure we always set an array state
       setEvents(Array.isArray(data) ? data : []);
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to fetch events");
+    } catch (err: unknown) {
+      setError(getErrorMessage(err) || "Failed to fetch events");
       console.error("Error fetching events:", err);
       setEvents([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchEvents();
-  }, []);
+  }, [fetchEvents]);
 
   return { events, loading, error, refetch: fetchEvents };
 };
@@ -43,7 +58,7 @@ export const useEventDetails = (eventId: string | null) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchEventDetails = async () => {
+  const fetchEventDetails = useCallback(async () => {
     if (!eventId) return;
 
     try {
@@ -51,13 +66,13 @@ export const useEventDetails = (eventId: string | null) => {
       setError(null);
       const data = await DashboardService.getEventDetails(eventId);
       setEventDetails(data);
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to fetch event details");
+    } catch (err: unknown) {
+      setError(getErrorMessage(err) || "Failed to fetch event details");
       console.error("Error fetching event details:", err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [eventId]);
 
   useEffect(() => {
     if (eventId) {
@@ -65,10 +80,10 @@ export const useEventDetails = (eventId: string | null) => {
     } else {
       setEventDetails(null);
     }
-  }, [eventId]);
+  }, [eventId, fetchEventDetails]);
 
   return { eventDetails, loading, error, refetch: fetchEventDetails };
-}
+};
 
 // Hook to fetch attendance records for an event
 export const useAttendanceByEvent = (eventId: string | null) => {
@@ -76,7 +91,7 @@ export const useAttendanceByEvent = (eventId: string | null) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchAttendance = async () => {
+  const fetchAttendance = useCallback(async () => {
     if (!eventId) return;
 
     try {
@@ -84,14 +99,14 @@ export const useAttendanceByEvent = (eventId: string | null) => {
       setError(null);
       const data = await DashboardService.getAttendanceByEvent(eventId);
       setAttendance(data);
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to fetch attendance records");
+    } catch (err: unknown) {
+      setError(getErrorMessage(err) || "Failed to fetch attendance records");
       console.error("Error fetching attendance:", err);
       setAttendance([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
-  };
+  }, [eventId]);
 
   useEffect(() => {
     if (eventId) {
@@ -99,7 +114,7 @@ export const useAttendanceByEvent = (eventId: string | null) => {
     } else {
       setAttendance([]);
     }
-  }, [eventId]);
+  }, [eventId, fetchAttendance]);
 
   return { attendance, loading, error, refetch: fetchAttendance };
-}
+};
