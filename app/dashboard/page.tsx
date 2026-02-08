@@ -7,6 +7,7 @@ import { FilterModal } from '@/components/dashboard/FilterModal';
 import { TotalAttendanceCard } from '@/components/dashboard/TotalAttendanceCard';
 import { YearLevelCard } from '@/components/dashboard/YearLevelCard';
 import { useAttendanceByEvent, useEventDetails, useEvents } from '@/lib/fetchdata';
+import { getCourse, getYearLevel, isValidAttendee } from '@/lib/utils/dashboard';
 import { useState } from 'react';
 
 export default function DashboardPage() {
@@ -40,36 +41,7 @@ export default function DashboardPage() {
     setSearchTerm('');
   };
 
-  // Helper to get year level from CSY (e.g., "BSCS-2" becomes "2nd")
-  const getYearLevel = (csy: string | undefined | null): string => {
-    if (!csy || typeof csy !== 'string') {
-      return 'Unknown';
-    }
-    const yearMatch = csy.match(/\d/);
-    if (yearMatch) {
-      const year = parseInt(yearMatch[0]);
-      const yearSuffix = year === 1 ? '1st' : year === 2 ? '2nd' : year === 3 ? '3rd' : '4th';
-      return yearSuffix;
-    }
-    return 'Unknown';
-  };
 
-  // Helper to get course from CSY (e.g., "BSIT-2B" becomes "IT", "ACT-3A" becomes "ACT")
-  const getCourse = (csy: string | undefined | null): string => {
-    if (!csy || typeof csy !== 'string') {
-      return 'Unknown';
-    }
-    // Check for ACT course (not prefixed with BS)
-    if (csy.startsWith('ACT')) {
-      return 'ACT';
-    }
-    // Check for BS-prefixed courses (BSIT, BSCS, BSIS)
-    const courseMatch = csy.match(/^BS([A-Z]{2})/);
-    if (courseMatch) {
-      return courseMatch[1]; // Returns "IT", "CS", or "IS"
-    }
-    return 'Unknown';
-  };
 
   // Get unique values for filters
   const sections = attendance ? Array.from(new Set(attendance.map(attendee => attendee.CSY || ''))).filter(Boolean).sort() : [];
@@ -79,12 +51,7 @@ export default function DashboardPage() {
   // Filter attendees - first remove invalid records, then apply other filters
   const filteredAttendees = attendance ? attendance.filter(attendee => {
     // First filter out invalid attendees
-    const hasValidLastName = attendee.lastName && attendee.lastName.trim() && attendee.lastName !== 'Unknown';
-    const hasValidFirstName = attendee.firstName && attendee.firstName.trim() && attendee.firstName !== 'Unknown';
-    const hasValidStudentId = attendee.studentId && attendee.studentId.trim() && attendee.studentId !== 'Unknown';
-    const hasValidCSY = attendee.CSY && attendee.CSY.trim() && attendee.CSY !== 'Unknown';
-
-    if (!(hasValidLastName || hasValidFirstName || hasValidStudentId || hasValidCSY)) {
+    if (!isValidAttendee(attendee)) {
       return false;
     }
 
@@ -224,12 +191,7 @@ export default function DashboardPage() {
     // Calculate present and total for each year level
     attendance.forEach(attendee => {
       // Skip invalid attendees
-      const hasValidLastName = attendee.lastName && attendee.lastName.trim() && attendee.lastName !== 'Unknown';
-      const hasValidFirstName = attendee.firstName && attendee.firstName.trim() && attendee.firstName !== 'Unknown';
-      const hasValidStudentId = attendee.studentId && attendee.studentId.trim() && attendee.studentId !== 'Unknown';
-      const hasValidCSY = attendee.CSY && attendee.CSY.trim() && attendee.CSY !== 'Unknown';
-
-      if (!(hasValidLastName || hasValidFirstName || hasValidStudentId || hasValidCSY)) {
+      if (!isValidAttendee(attendee)) {
         return;
       }
 

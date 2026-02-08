@@ -1,21 +1,7 @@
 import { DashboardService } from "@/services/dashboard-service";
 import { Attendee, Event, EventDetails } from "@/types/dashboard";
 import { useCallback, useEffect, useState } from "react";
-
-type ApiErrorResponse = {
-  response?: {
-    data?: {
-      message?: string;
-    };
-  };
-};
-
-const getErrorMessage = (err: unknown): string | undefined => {
-  if (typeof err === "object" && err !== null && "response" in err) {
-    return (err as ApiErrorResponse).response?.data?.message;
-  }
-  return undefined;
-};
+import { getErrorMessage } from "./utils/dashboard";
 
 // Hook to fetch events list
 export const useEvents = () => {
@@ -28,13 +14,6 @@ export const useEvents = () => {
       setLoading(true);
       setError(null);
       const data = await DashboardService.getEvents();
-
-      // Debug log to verify data type
-      console.log("Fetched events data:", data);
-      console.log("Data type:", typeof data);
-      console.log("Is array:", Array.isArray(data));
-
-      // Ensure we always set an array state
       setEvents(Array.isArray(data) ? data : []);
     } catch (err: unknown) {
       setError(getErrorMessage(err) || "Failed to fetch events");

@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { isValidAttendee } from "@/lib/utils/dashboard";
 import { Attendee } from "@/types/dashboard";
 import { CheckCircle, Filter, Search } from "lucide-react";
 
@@ -21,26 +22,7 @@ export function AttendanceTable({
   console.log("Attendees received by table:", attendees);
 
   // Filter out invalid attendees with no meaningful data
-  const validAttendees = attendees.filter((attendee) => {
-    const hasValidLastName =
-      attendee.lastName &&
-      attendee.lastName.trim() &&
-      attendee.lastName !== "Unknown";
-    const hasValidFirstName =
-      attendee.firstName &&
-      attendee.firstName.trim() &&
-      attendee.firstName !== "Unknown";
-    const hasValidStudentId =
-      attendee.studentId &&
-      attendee.studentId.trim() &&
-      attendee.studentId !== "Unknown";
-    const hasValidCSY =
-      attendee.CSY && attendee.CSY.trim() && attendee.CSY !== "Unknown";
-
-    return (
-      hasValidLastName || hasValidFirstName || hasValidStudentId || hasValidCSY
-    );
-  });
+  const validAttendees = attendees.filter(isValidAttendee);
 
   console.log("Valid attendees after filtering:", validAttendees);
 

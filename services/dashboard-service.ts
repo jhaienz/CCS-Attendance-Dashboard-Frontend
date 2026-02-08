@@ -1,5 +1,6 @@
 import { Attendee, Event, EventDetails } from "@/types/dashboard";
 import api from "./axios-instance";
+import { isValidAttendee } from "@/lib/utils/dashboard";
 
 type ApiEvent = {
   _id?: string;
@@ -89,31 +90,7 @@ export const DashboardService = {
     });
 
     // Filter out invalid attendees with no meaningful data
-    const filtered = mapped.filter((attendee: Attendee) => {
-      if (!attendee) return false;
-
-      const hasValidLastName =
-        attendee.lastName &&
-        attendee.lastName.trim() &&
-        attendee.lastName !== "Unknown";
-      const hasValidFirstName =
-        attendee.firstName &&
-        attendee.firstName.trim() &&
-        attendee.firstName !== "Unknown";
-      const hasValidStudentId =
-        attendee.studentId &&
-        attendee.studentId.trim() &&
-        attendee.studentId !== "Unknown";
-      const hasValidCSY =
-        attendee.CSY && attendee.CSY.trim() && attendee.CSY !== "Unknown";
-
-      return (
-        hasValidLastName ||
-        hasValidFirstName ||
-        hasValidStudentId ||
-        hasValidCSY
-      );
-    });
+    const filtered = mapped.filter(isValidAttendee);
 
     console.log("Mapped attendees:", mapped);
     console.log("Filtered attendees:", filtered);
