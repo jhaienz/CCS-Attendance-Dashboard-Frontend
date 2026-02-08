@@ -1,9 +1,9 @@
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Attendee } from '@/types/dashboard';
-import { CheckCircle, Filter, Search } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Attendee } from "@/types/dashboard";
+import { CheckCircle, Filter, Search } from "lucide-react";
 
 interface AttendanceTableProps {
   attendees: Attendee[];
@@ -15,22 +15,34 @@ interface AttendanceTableProps {
 export function AttendanceTable({
   attendees,
   onFilterClick,
-  searchTerm = '',
-  onSearchChange
+  searchTerm = "",
+  onSearchChange,
 }: AttendanceTableProps) {
-  console.log('Attendees received by table:', attendees);
+  console.log("Attendees received by table:", attendees);
 
   // Filter out invalid attendees with no meaningful data
-  const validAttendees = attendees.filter(attendee => {
-    const hasValidLastName = attendee.lastName && attendee.lastName.trim() && attendee.lastName !== 'Unknown';
-    const hasValidFirstName = attendee.firstName && attendee.firstName.trim() && attendee.firstName !== 'Unknown';
-    const hasValidStudentId = attendee.studentId && attendee.studentId.trim() && attendee.studentId !== 'Unknown';
-    const hasValidCSY = attendee.CSY && attendee.CSY.trim() && attendee.CSY !== 'Unknown';
+  const validAttendees = attendees.filter((attendee) => {
+    const hasValidLastName =
+      attendee.lastName &&
+      attendee.lastName.trim() &&
+      attendee.lastName !== "Unknown";
+    const hasValidFirstName =
+      attendee.firstName &&
+      attendee.firstName.trim() &&
+      attendee.firstName !== "Unknown";
+    const hasValidStudentId =
+      attendee.studentId &&
+      attendee.studentId.trim() &&
+      attendee.studentId !== "Unknown";
+    const hasValidCSY =
+      attendee.CSY && attendee.CSY.trim() && attendee.CSY !== "Unknown";
 
-    return hasValidLastName || hasValidFirstName || hasValidStudentId || hasValidCSY;
+    return (
+      hasValidLastName || hasValidFirstName || hasValidStudentId || hasValidCSY
+    );
   });
 
-  console.log('Valid attendees after filtering:', validAttendees);
+  console.log("Valid attendees after filtering:", validAttendees);
 
   // Helper to get status indicator
   const getStatusIndicator = (isPresent: boolean) => {
@@ -76,7 +88,8 @@ export function AttendanceTable({
           </div>
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          {validAttendees.length} {validAttendees.length === 1 ? 'Student' : 'Students'}
+          {validAttendees.length}{" "}
+          {validAttendees.length === 1 ? "Student" : "Students"}
         </p>
       </CardHeader>
       <CardContent>
@@ -85,37 +98,81 @@ export function AttendanceTable({
             <table className="w-full border-collapse">
               <thead>
                 <tr className="border-b bg-secondary/50">
-                  <th className="text-left py-3 px-4 font-medium text-sm">No.</th>
-                  <th className="text-left py-3 px-4 font-medium text-sm">Last Name</th>
-                  <th className="text-left py-3 px-4 font-medium text-sm">First Name</th>
-                  <th className="text-left py-3 px-4 font-medium text-sm">Student ID</th>
-                  <th className="text-left py-3 px-4 font-medium text-sm">Section</th>
-                  <th className="text-left py-3 px-4 font-medium text-sm">AM IN</th>
-                  <th className="text-left py-3 px-4 font-medium text-sm">AM OUT</th>
-                  <th className="text-left py-3 px-4 font-medium text-sm">PM IN</th>
-                  <th className="text-left py-3 px-4 font-medium text-sm">PM OUT</th>
+                  <th className="text-left py-3 px-4 font-medium text-sm">
+                    No.
+                  </th>
+                  <th className="text-left py-3 px-4 font-medium text-sm">
+                    Last Name
+                  </th>
+                  <th className="text-left py-3 px-4 font-medium text-sm">
+                    First Name
+                  </th>
+                  <th className="text-left py-3 px-4 font-medium text-sm">
+                    Student ID
+                  </th>
+                  <th className="text-left py-3 px-4 font-medium text-sm">
+                    Section
+                  </th>
+                  <th className="text-left py-3 px-4 font-medium text-sm">
+                    AM IN
+                  </th>
+                  <th className="text-left py-3 px-4 font-medium text-sm">
+                    AM OUT
+                  </th>
+                  <th className="text-left py-3 px-4 font-medium text-sm">
+                    PM IN
+                  </th>
+                  <th className="text-left py-3 px-4 font-medium text-sm">
+                    PM OUT
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {validAttendees.length > 0 ? (
                   validAttendees.map((attendee, index) => (
-                    <tr key={attendee.studentId} className="border-b hover:bg-secondary/30 transition-colors">
+                    <tr
+                      key={attendee.id}
+                      className="border-b hover:bg-secondary/30 transition-colors"
+                    >
                       <td className="py-3 px-4 text-sm">{index + 1}</td>
-                      <td className="py-3 px-4 text-sm font-medium">{attendee.lastName}</td>
-                      <td className="py-3 px-4 text-sm">{attendee.firstName}</td>
-                      <td className="py-3 px-4 text-sm font-mono">{attendee.studentId}</td>
-                      <td className="py-3 px-4 text-sm font-medium">{attendee.CSY || 'Unknown'}</td>
-                      <td className="py-3 px-4">{getStatusIndicator(attendee.AM)}</td>
-                      <td className="py-3 px-4">{getStatusIndicator(attendee.AMOut)}</td>
-                      <td className="py-3 px-4">{getStatusIndicator(attendee.PM)}</td>
-                      <td className="py-3 px-4">{getStatusIndicator(attendee.PMOut)}</td>
+                      <td className="py-3 px-4 text-sm font-medium">
+                        {attendee.lastName}
+                      </td>
+                      <td className="py-3 px-4 text-sm">
+                        {attendee.firstName}
+                      </td>
+                      <td className="py-3 px-4 text-sm font-mono">
+                        {attendee.studentId}
+                      </td>
+                      <td className="py-3 px-4 text-sm font-medium">
+                        {attendee.CSY || "Unknown"}
+                      </td>
+                      <td className="py-3 px-4">
+                        {getStatusIndicator(attendee.AM)}
+                      </td>
+                      <td className="py-3 px-4">
+                        {getStatusIndicator(attendee.AMOut)}
+                      </td>
+                      <td className="py-3 px-4">
+                        {getStatusIndicator(attendee.PM)}
+                      </td>
+                      <td className="py-3 px-4">
+                        {getStatusIndicator(attendee.PMOut)}
+                      </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={9} className="py-12 px-4 text-center text-muted-foreground">
-                      <p className="text-lg font-medium mb-2">No Attendance Records</p>
-                      <p className="text-sm">No students have been marked present yet.</p>
+                    <td
+                      colSpan={9}
+                      className="py-12 px-4 text-center text-muted-foreground"
+                    >
+                      <p className="text-lg font-medium mb-2">
+                        No Attendance Records
+                      </p>
+                      <p className="text-sm">
+                        No students have been marked present yet.
+                      </p>
                     </td>
                   </tr>
                 )}
