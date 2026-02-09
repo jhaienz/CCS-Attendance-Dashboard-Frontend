@@ -15,8 +15,8 @@ export function DashboardLayout({ children, events, selectedEventId, onEventSele
     <div className="h-screen flex flex-col bg-background text-foreground">
       <Header />
       <div className="flex flex-1 overflow-hidden">
-        <EventsSidebar 
-          events={events} 
+        <EventsSidebar
+          events={events}
           selectedEventId={selectedEventId}
           onEventSelect={onEventSelect}
         />

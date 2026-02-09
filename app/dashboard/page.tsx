@@ -259,17 +259,6 @@ export default function DashboardPage() {
                 totalEnrolled={totalEnrolled}
               />
             </div>
-
-
-            {/* Statistics Cards */}
-            {/* <div className="col-span-12">
-              <StatisticsCards
-                totalBySection={totalBySection}
-                totalByYear={totalByYear}
-                totalByCourse={totalByCourse}
-              />
-            </div> */}
-
             {/* Attendance Table move sa bottom */}
             <div className="col-span-12">
               <AttendanceTable

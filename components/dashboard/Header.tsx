@@ -1,5 +1,4 @@
 import { Button } from '@/components/ui/button';
-import { AuthService } from '@/services/auth-service';
 import { LogOut } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -10,18 +9,11 @@ export function Header() {
   const [loading, setLoading] = useState(false);
 
   const handleLogout = async () => {
-    try {
-      setLoading(true);
-      await AuthService.officerLogout();
-    } catch (error) {
-      console.error('Logout failed:', error);
-    } finally {
-      // Clear token from session storage and cookies
-      sessionStorage.removeItem('token');
-      document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
-      setLoading(false);
-      router.push('/login');
-    }
+    // Clear token from session storage and cookies
+    sessionStorage.removeItem('token');
+    document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+    setLoading(false);
+    router.push('/login');
   };
 
   return (

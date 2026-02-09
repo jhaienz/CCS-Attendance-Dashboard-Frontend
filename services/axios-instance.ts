@@ -1,5 +1,4 @@
 import axios from "axios";
-import { AuthService } from "./auth-service";
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
@@ -20,43 +19,16 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Response interceptor to handle token refresh and 401 errors
+// TODO: implementation kapag expired na ang token dapat mag logout
 api.interceptors.response.use(
   (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      try {
-        // Attempt to refresh token
-        const response = await AuthService.refreshToken();
-        const newToken = response.token;
-
-        // Update token in session storage
-        if (typeof window !== "undefined") {
-          sessionStorage.setItem("token", newToken);
-        }
-
-        // Update request with new token
-        originalRequest.headers.Authorization = `Bearer ${newToken}`;
-
-        // Retry original request
-        return api(originalRequest);
-      } catch (refreshError) {
-        console.error("Token refresh failed:", refreshError);
-
-        // If refresh fails, logout user
-        if (typeof window !== "undefined") {
-          sessionStorage.removeItem("token");
-          window.location.href = "/login";
-        }
-      }
+  (error) => {
+    if (error.response?.status == 401) {
+      // handle logout logic in here to be implemented soon
+      console.log("logging out because of expired token");
     }
-
     return Promise.reject(error);
-  },
+  }
 );
 
 export default api;
