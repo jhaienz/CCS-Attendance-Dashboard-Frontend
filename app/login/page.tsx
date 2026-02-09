@@ -9,6 +9,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+
+import { handleLogin } from "@/lib/utils";
 import { AuthService } from "@/services/auth-service";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -54,11 +56,8 @@ export default function Login() {
     try {
       const data = await AuthService.officerLogin(formData);
 
-      // Store token in session storage and cookies for middleware access
-      sessionStorage.setItem("token", data.token);
-
-      // Set cookie with token for middleware
-      document.cookie = `token=${data.token}; path=/; max-age=${24 * 60 * 60}; SameSite=Strict; Secure`;
+      // Handle login with cross-tab communication
+      handleLogin(data.token);
 
       router.push("/dashboard");
     } catch (error: any) {

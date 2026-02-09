@@ -1,3 +1,4 @@
+import { performLogout } from "@/lib/utils";
 import axios from "axios";
 
 const api = axios.create({
@@ -10,8 +11,14 @@ const api = axios.create({
 
 // Request interceptor to add authentication token
 api.interceptors.request.use((config) => {
-  const token =
-    typeof window !== "undefined" ? sessionStorage.getItem("token") : null;
+  let token = null;
+  if (typeof window !== "undefined") {
+    token = sessionStorage.getItem("token") || localStorage.getItem("authToken");
+    // If token is found in localStorage but not in sessionStorage, sync it
+    if (token && !sessionStorage.getItem("token")) {
+      sessionStorage.setItem("token", token);
+    }
+  }
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -19,13 +26,12 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// TODO: implementation kapag expired na ang token dapat mag logout
+// Response interceptor to handle 401 Unauthorized errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status == 401) {
-      // handle logout logic in here to be implemented soon
-      console.log("logging out because of expired token");
+    if (error.response?.status === 401) {
+      performLogout();
     }
     return Promise.reject(error);
   }

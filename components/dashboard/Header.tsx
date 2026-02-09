@@ -1,19 +1,53 @@
 import { Button } from '@/components/ui/button';
+import { isAuthenticated, performLogout } from '@/lib/utils';
 import { LogOut } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export function Header() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
+  // Check token validity when tab becomes visible or storage changes
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && !isAuthenticated()) {
+        performLogout();
+      }
+    };
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "authToken") {
+        if (e.newValue) {
+          // Login event from another tab
+          sessionStorage.setItem("token", e.newValue);
+          document.cookie = `token=${e.newValue}; path=/; max-age=${24 * 60 * 60}; SameSite=Strict; Secure`;
+          window.location.reload(); // Refresh to get new data
+        } else {
+          // Logout event from another tab
+          performLogout();
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('storage', handleStorageChange);
+
+    // Also check on initial load
+    if (!isAuthenticated()) {
+      performLogout();
+    }
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+
   const handleLogout = async () => {
-    // Clear token from session storage and cookies
-    sessionStorage.removeItem('token');
-    document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
     setLoading(false);
-    router.push('/login');
+    performLogout();
   };
 
   return (

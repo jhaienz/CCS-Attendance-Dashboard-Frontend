@@ -1,3 +1,4 @@
+import { performLogout } from "@/lib/utils";
 import { DashboardService } from "@/services/dashboard-service";
 import { Attendee, Event, EventDetails } from "@/types/dashboard";
 import { useCallback, useEffect, useState } from "react";
@@ -16,8 +17,15 @@ export const useEvents = () => {
       const data = await DashboardService.getEvents();
       setEvents(Array.isArray(data) ? data : []);
     } catch (err: unknown) {
-      setError(getErrorMessage(err) || "Failed to fetch events");
+      const errorMessage = getErrorMessage(err) || "Failed to fetch events";
+      setError(errorMessage);
       console.error("Error fetching events:", err);
+
+      // Check if error is Unauthorized (401)
+      if (errorMessage.includes("Unauthorized")) {
+        performLogout();
+      }
+
       setEvents([]); // Set empty array on error
     } finally {
       setLoading(false);
@@ -46,8 +54,14 @@ export const useEventDetails = (eventId: string | null) => {
       const data = await DashboardService.getEventDetails(eventId);
       setEventDetails(data);
     } catch (err: unknown) {
-      setError(getErrorMessage(err) || "Failed to fetch event details");
+      const errorMessage = getErrorMessage(err) || "Failed to fetch event details";
+      setError(errorMessage);
       console.error("Error fetching event details:", err);
+
+      // Check if error is Unauthorized (401)
+      if (errorMessage.includes("Unauthorized")) {
+        performLogout();
+      }
     } finally {
       setLoading(false);
     }
@@ -79,8 +93,15 @@ export const useAttendanceByEvent = (eventId: string | null) => {
       const data = await DashboardService.getAttendanceByEvent(eventId);
       setAttendance(data);
     } catch (err: unknown) {
-      setError(getErrorMessage(err) || "Failed to fetch attendance records");
+      const errorMessage = getErrorMessage(err) || "Failed to fetch attendance records";
+      setError(errorMessage);
       console.error("Error fetching attendance:", err);
+
+      // Check if error is Unauthorized (401)
+      if (errorMessage.includes("Unauthorized")) {
+        performLogout();
+      }
+
       setAttendance([]); // Set empty array on error
     } finally {
       setLoading(false);

@@ -7,8 +7,9 @@ import { FilterModal } from '@/components/dashboard/FilterModal';
 import { TotalAttendanceCard } from '@/components/dashboard/TotalAttendanceCard';
 import { YearLevelCard } from '@/components/dashboard/YearLevelCard';
 import { useAttendanceByEvent, useEventDetails, useEvents } from '@/lib/fetchdata';
+import { isAuthenticated, performLogout } from '@/lib/utils';
 import { getCourse, getYearLevel, isValidAttendee } from '@/lib/utils/dashboard';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function DashboardPage() {
   // State management
@@ -19,6 +20,42 @@ export default function DashboardPage() {
   const [selectedCourse, setSelectedCourse] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState<boolean>(false);
+
+  // Check token validity when tab becomes visible or storage changes
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && !isAuthenticated()) {
+        performLogout();
+      }
+    };
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "authToken") {
+        if (e.newValue) {
+          // Login event from another tab
+          sessionStorage.setItem("token", e.newValue);
+          document.cookie = `token=${e.newValue}; path=/; max-age=${24 * 60 * 60}; SameSite=Strict; Secure`;
+          window.location.reload(); // Refresh to get new data
+        } else {
+          // Logout event from another tab
+          performLogout();
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('storage', handleStorageChange);
+
+    // Also check on initial load
+    if (!isAuthenticated()) {
+      performLogout();
+    }
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   // Fetch events and attendance data
   const { events, loading: eventsLoading, error: eventsError } = useEvents();
@@ -35,7 +72,6 @@ export default function DashboardPage() {
     setSelectedCourse('');
     setSearchTerm('');
   };
-
 
 
   // Get unique values for filters
