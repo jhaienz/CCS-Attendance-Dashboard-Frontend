@@ -281,6 +281,7 @@ export default function DashboardPage() {
             courses={courses}
             selectedCourse={selectedCourse}
             onCourseChange={setSelectedCourse}
+            attendance={attendance}
           />
 
           {/* Main Grid Layout */}
@@ -311,6 +312,12 @@ export default function DashboardPage() {
                 onFilterClick={() => setIsFilterModalOpen(true)}
                 searchTerm={searchTerm}
                 onSearchChange={setSearchTerm}
+                selectedCourse={selectedCourse}
+                selectedYear={selectedYear}
+                selectedSection={selectedSection}
+                onCourseChange={setSelectedCourse}
+                onYearChange={setSelectedYear}
+                onSectionChange={setSelectedSection}
               />
             </div>
           </div>

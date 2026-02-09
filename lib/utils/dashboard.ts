@@ -60,6 +60,19 @@ export const getCourse = (csy: string | undefined | null): string => {
   return "Unknown";
 };
 
+// Helper to get simplified section (year-block part) from CSY (e.g., "BSIT 1B" becomes "1B", "ACT-3A" becomes "3A")
+export const getSection = (csy: string | undefined | null): string => {
+  if (!csy || typeof csy !== "string") {
+    return "Unknown";
+  }
+  // Match patterns like "1B", "3A", "2C" with possible separators (space, hyphen, etc.)
+  const sectionMatch = csy.match(/\d+[A-Z]/);
+  if (sectionMatch) {
+    return sectionMatch[0]; // Returns "1B", "3A", etc.
+  }
+  return "Unknown";
+};
+
 // Generic API error handler
 export const getErrorMessage = (err: unknown): string => {
   if (typeof err === "object" && err !== null && "response" in err) {
