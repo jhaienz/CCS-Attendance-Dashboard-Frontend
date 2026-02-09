@@ -82,6 +82,19 @@ export function FilterModal({
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Course Filter */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Course</label>
+                <Select
+                  options={[
+                    { value: '', label: 'All Courses' },
+                    ...courses.map(course => ({ value: course, label: course }))
+                  ]}
+                  value={selectedCourse}
+                  onChange={(e) => onCourseChange(e.target.value)}
+                />
+              </div>
+
               {/* Section Filter */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">Section</label>
@@ -108,18 +121,6 @@ export function FilterModal({
                 />
               </div>
 
-              {/* Course Filter */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Course</label>
-                <Select
-                  options={[
-                    { value: '', label: 'All Courses' },
-                    ...courses.map(course => ({ value: course, label: course }))
-                  ]}
-                  value={selectedCourse}
-                  onChange={(e) => onCourseChange(e.target.value)}
-                />
-              </div>
             </div>
           </CardContent>
         </Card>

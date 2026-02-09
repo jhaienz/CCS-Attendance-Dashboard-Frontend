@@ -93,7 +93,7 @@ export function AttendanceTable({
                     Student ID
                   </th>
                   <th className="text-left py-3 px-4 font-medium text-sm">
-                    Section
+                    CSY
                   </th>
                   <th className="text-left py-3 px-4 font-medium text-sm">
                     AM IN

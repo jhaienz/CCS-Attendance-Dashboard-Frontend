@@ -26,11 +26,6 @@ export default function DashboardPage() {
     useEventDetails(selectedEventId);
   const { attendance } = useAttendanceByEvent(selectedEventId);
 
-  // Handle year level click
-  const handleYearLevelClick = (year: string) => {
-    setSelectedYearLevel(year === selectedYearLevel ? null : year);
-  };
-
   // Handle event selection
   const handleEventSelect = (eventId: string) => {
     setSelectedEventId(eventId);
@@ -253,8 +248,6 @@ export default function DashboardPage() {
                 <YearLevelCard
                   key={yearLevel.year}
                   yearLevel={yearLevel}
-                  isSelected={selectedYearLevel === yearLevel.year}
-                  onClick={() => handleYearLevelClick(yearLevel.year)}
                 />
               ))}
 
