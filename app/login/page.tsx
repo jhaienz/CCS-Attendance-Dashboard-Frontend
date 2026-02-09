@@ -81,6 +81,7 @@ export default function Login() {
       } else if (error.message === "Network Error") {
         setError("Network error. Please check your connection.");
       } else {
+        console.error("Server error:", error);
         setError("Error, Please try again.");
       }
     } finally {
