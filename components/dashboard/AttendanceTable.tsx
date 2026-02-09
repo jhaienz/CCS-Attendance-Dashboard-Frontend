@@ -2,15 +2,21 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { isValidAttendee } from "@/lib/utils/dashboard";
+import { getSection, isValidAttendee } from "@/lib/utils/dashboard";
 import { Attendee } from "@/types/dashboard";
-import { CheckCircle, Filter, Search } from "lucide-react";
+import { CheckCircle, Filter, Search, X } from "lucide-react";
 
 interface AttendanceTableProps {
   attendees: Attendee[];
   onFilterClick?: () => void;
   searchTerm?: string;
   onSearchChange?: (value: string) => void;
+  selectedCourse?: string;
+  selectedYear?: string;
+  selectedSection?: string;
+  onCourseChange?: (value: string) => void;
+  onYearChange?: (value: string) => void;
+  onSectionChange?: (value: string) => void;
 }
 
 export function AttendanceTable({
@@ -18,6 +24,12 @@ export function AttendanceTable({
   onFilterClick,
   searchTerm = "",
   onSearchChange,
+  selectedCourse = "",
+  selectedYear = "",
+  selectedSection = "",
+  onCourseChange,
+  onYearChange,
+  onSectionChange,
 }: AttendanceTableProps) {
   console.log("Attendees received by table:", attendees);
 
@@ -37,6 +49,9 @@ export function AttendanceTable({
     }
     return null;
   };
+
+  // Check if there are any active filters
+  const hasActiveFilters = selectedCourse || selectedYear || selectedSection;
 
   return (
     <Card className="h-full">
@@ -72,7 +87,66 @@ export function AttendanceTable({
         <p className="text-sm text-muted-foreground">
           {validAttendees.length}{" "}
           {validAttendees.length === 1 ? "Student" : "Students"}
+          {hasActiveFilters && (
+            <span className="ml-2 text-muted-foreground">
+              ({[
+                selectedCourse && `Course: ${selectedCourse}`,
+                selectedYear && `Year: ${selectedYear}`,
+                selectedSection && `Section: ${getSection(selectedSection)}`,
+              ].filter(Boolean).join(", ")})
+            </span>
+          )}
         </p>
+        {/* Active Filters Display */}
+        {hasActiveFilters && (
+          <div className="flex flex-wrap gap-2 mt-2">
+            {selectedCourse && (
+              <div className="flex items-center gap-1 bg-secondary px-3 py-1 rounded-full text-sm">
+                <span>Course: {selectedCourse}</span>
+                {onCourseChange && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onCourseChange("")}
+                    className="h-5 w-5 p-0 rounded-full"
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
+            )}
+            {selectedYear && (
+              <div className="flex items-center gap-1 bg-secondary px-3 py-1 rounded-full text-sm">
+                <span>Year: {selectedYear}</span>
+                {onYearChange && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onYearChange("")}
+                    className="h-5 w-5 p-0 rounded-full"
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
+            )}
+            {selectedSection && (
+              <div className="flex items-center gap-1 bg-secondary px-3 py-1 rounded-full text-sm">
+                <span>Section: {getSection(selectedSection)}</span>
+                {onSectionChange && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onSectionChange("")}
+                    className="h-5 w-5 p-0 rounded-full"
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </CardHeader>
       <CardContent>
         <ScrollArea className="h-180">

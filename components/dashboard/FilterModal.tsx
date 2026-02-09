@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select } from '@/components/ui/select';
+import { getCourse, getSection, getYearLevel } from '@/lib/utils/dashboard';
 import { Filter, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -16,6 +17,7 @@ interface FilterModalProps {
   courses: string[];
   selectedCourse: string;
   onCourseChange: (value: string) => void;
+  attendance: any[]; // Added to get raw data for cascading filters
 }
 
 export function FilterModal({
@@ -29,7 +31,8 @@ export function FilterModal({
   onYearChange,
   courses,
   selectedCourse,
-  onCourseChange
+  onCourseChange,
+  attendance
 }: FilterModalProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -52,6 +55,42 @@ export function FilterModal({
   const handleOverlayClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       onClose();
+    }
+  };
+
+  // Filter sections based on selected course and/or year
+  const filteredSections = sections.filter(section => {
+    const course = getCourse(section);
+    const year = getYearLevel(section);
+    return (!selectedCourse || course === selectedCourse) && (!selectedYear || year === selectedYear);
+  });
+
+  // Filter courses based on selected year
+  const filteredCourses = courses.filter(course => {
+    if (!selectedYear) return true;
+    return sections.some(section => getCourse(section) === course && getYearLevel(section) === selectedYear);
+  });
+
+  // Filter years based on selected course
+  const filteredYears = years.filter(year => {
+    if (!selectedCourse) return true;
+    return sections.some(section => getCourse(section) === selectedCourse && getYearLevel(section) === year);
+  });
+
+  // Handle filter changes with cascading logic
+  const handleCourseChange = (value: string) => {
+    onCourseChange(value);
+    // Reset section if it's no longer valid for the new course
+    if (value && !filteredSections.some(section => section === selectedSection)) {
+      onSectionChange('');
+    }
+  };
+
+  const handleYearChange = (value: string) => {
+    onYearChange(value);
+    // Reset section if it's no longer valid for the new year
+    if (value && !filteredSections.some(section => section === selectedSection)) {
+      onSectionChange('');
     }
   };
 
@@ -88,23 +127,10 @@ export function FilterModal({
                 <Select
                   options={[
                     { value: '', label: 'All Courses' },
-                    ...courses.map(course => ({ value: course, label: course }))
+                    ...filteredCourses.map(course => ({ value: course, label: course }))
                   ]}
                   value={selectedCourse}
-                  onChange={(e) => onCourseChange(e.target.value)}
-                />
-              </div>
-
-              {/* Section Filter */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Section</label>
-                <Select
-                  options={[
-                    { value: '', label: 'All Sections' },
-                    ...sections.map(section => ({ value: section, label: section }))
-                  ]}
-                  value={selectedSection}
-                  onChange={(e) => onSectionChange(e.target.value)}
+                  onChange={(e) => handleCourseChange(e.target.value)}
                 />
               </div>
 
@@ -114,10 +140,26 @@ export function FilterModal({
                 <Select
                   options={[
                     { value: '', label: 'All Years' },
-                    ...years.map(year => ({ value: year, label: year }))
+                    ...filteredYears.map(year => ({ value: year, label: year }))
                   ]}
                   value={selectedYear}
-                  onChange={(e) => onYearChange(e.target.value)}
+                  onChange={(e) => handleYearChange(e.target.value)}
+                />
+              </div>
+
+              {/* Section Filter */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Section</label>
+                <Select
+                  options={[
+                    { value: '', label: 'All Sections' },
+                    ...filteredSections.map(section => ({
+                      value: section,
+                      label: getSection(section) // Display simplified section label
+                    }))
+                  ]}
+                  value={selectedSection}
+                  onChange={(e) => onSectionChange(e.target.value)}
                 />
               </div>
 

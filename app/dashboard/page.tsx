@@ -62,6 +62,12 @@ export default function DashboardPage() {
   const { eventDetails, loading: eventDetailsLoading, error: eventDetailsError } =
     useEventDetails(selectedEventId);
   const { attendance } = useAttendanceByEvent(selectedEventId);
+  // Handle year level click
+  const handleYearLevelClick = (year: string) => {
+    setSelectedYearLevel(year === selectedYearLevel ? null : year);
+  };
+
+
 
   // Handle event selection
   const handleEventSelect = (eventId: string) => {
@@ -100,6 +106,7 @@ export default function DashboardPage() {
       (!selectedSection || attendee.CSY === selectedSection) &&
       (!selectedYear || year === selectedYear) &&
       (!selectedCourse || course === selectedCourse) &&
+      (!selectedYearLevel || year === selectedYearLevel) &&
       (lastName.includes(searchLower) ||
         firstName.includes(searchLower) ||
         studentId.includes(searchLower))
@@ -274,6 +281,7 @@ export default function DashboardPage() {
             courses={courses}
             selectedCourse={selectedCourse}
             onCourseChange={setSelectedCourse}
+            attendance={attendance}
           />
 
           {/* Main Grid Layout */}
@@ -284,6 +292,8 @@ export default function DashboardPage() {
                 <YearLevelCard
                   key={yearLevel.year}
                   yearLevel={yearLevel}
+                  isSelected={selectedYearLevel === yearLevel.year}
+                  onClick={() => handleYearLevelClick(yearLevel.year)}
                 />
               ))}
 
@@ -302,6 +312,12 @@ export default function DashboardPage() {
                 onFilterClick={() => setIsFilterModalOpen(true)}
                 searchTerm={searchTerm}
                 onSearchChange={setSearchTerm}
+                selectedCourse={selectedCourse}
+                selectedYear={selectedYear}
+                selectedSection={selectedSection}
+                onCourseChange={setSelectedCourse}
+                onYearChange={setSelectedYear}
+                onSectionChange={setSelectedSection}
               />
             </div>
           </div>
